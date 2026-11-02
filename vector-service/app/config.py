@@ -7,7 +7,26 @@ from pathlib import Path
 
 
 SERVICE_ROOT = Path(__file__).resolve().parent.parent
-DEFAULT_BASE_URL = "http://172.18.20.44:30066/embedding"
+def model_base_url() -> str:
+    configured = os.getenv("MODEL_BASE_URL", "").strip()
+    if configured:
+        return configured.rstrip("/")
+    path = Path(os.getenv("GALLERY_MODEL_CONFIG") or SERVICE_ROOT.parent / "runtime-data/model.properties")
+    if not path.is_file():
+        return ""
+    for line in path.read_text(encoding="utf-8").splitlines():
+        key, separator, value = line.partition("=")
+        if separator and key.strip() == "MODEL_BASE_URL":
+            return value.strip().rstrip("/")
+    return ""
+
+
+def embedding_base_url() -> str:
+    configured = os.getenv("EMBEDDING_BASE_URL", "").strip()
+    if configured:
+        return configured.rstrip("/")
+    gateway = model_base_url()
+    return gateway + "/embedding" if gateway else ""
 
 
 def default_chroma_path() -> Path:
@@ -29,9 +48,7 @@ class Settings:
         default_factory=lambda: os.getenv("EMBEDDING_API_KEY", "").strip()
     )
     base_url: str = field(
-        default_factory=lambda: os.getenv(
-            "EMBEDDING_BASE_URL", DEFAULT_BASE_URL
-        ).strip().rstrip("/")
+        default_factory=embedding_base_url
     )
     model_name: str = field(
         default_factory=lambda: os.getenv(

@@ -4,6 +4,8 @@ server:
     context-path: /api
 
 spring:
+  config:
+    import: "optional:file:./runtime-data/model.properties,optional:file:${GALLERY_MODEL_CONFIG:../runtime-data/model.properties}"
   application:
     name: AI 协同云影库
   web:
@@ -81,12 +83,12 @@ aliYunAi:
 
 # 服务器部署的 Qwen-Image-2.1 图片生成/编辑接口
 qwenImage:
-  baseUrl: ${QWEN_IMAGE_BASE_URL:http://172.18.20.44:30066}
+  baseUrl: ${QWEN_IMAGE_BASE_URL:${MODEL_BASE_URL:}}
 
 # Java 原生修图 Agent
 agent:
   planner:
-    baseUrl: ${AGENT_PLANNER_BASE_URL:http://172.18.20.44:30066/qwen-vl/v1}
+    baseUrl: ${AGENT_PLANNER_BASE_URL:${MODEL_BASE_URL:}/qwen-vl/v1}
     apiKey: ${AGENT_PLANNER_API_KEY:}
     model: ${AGENT_PLANNER_MODEL:Qwen3.8-27B-FP8}
     timeoutMs: ${AGENT_PLANNER_TIMEOUT_MS:630000}

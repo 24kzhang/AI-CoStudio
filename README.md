@@ -4,6 +4,12 @@
 
 `Spring Boot` · `Vue 3` · `WebSocket` · `Redis` · `MySQL` · `FastAPI + ChromaDB` · `Node.js + FFmpeg`
 
+## 模型接口配置
+
+在仓库根目录创建 `runtime-data/model.properties`，设置 `MODEL_BASE_URL=模型网关的完整地址`，地址包含协议和端口，末尾不要加斜杠。此文件已被 Git 忽略，实际服务器地址仅保留在本机。
+
+后端、视频服务和向量服务共用这份配置，修改后重启相关服务。后端可从仓库根目录或 `backend` 目录启动；其他工作目录可通过 `GALLERY_MODEL_CONFIG` 指定配置文件的绝对路径。`MODEL_BASE_URL` 环境变量优先于文件中的值，原有各服务专用地址环境变量仍可单独覆盖。
+
 > 以下截图均来自当前运行系统的真实浏览器，窗口尺寸为 `1920 × 1080`。
 
 ## 资产图库

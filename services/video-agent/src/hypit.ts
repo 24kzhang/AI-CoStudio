@@ -167,7 +167,7 @@ export async function writeWorkspace(projectId: string, revision: number | strin
     await copyFile(font, resolve(workspace, 'assets/font.ttf'))
   }
   await writeFile(resolve(workspace, 'hypit.runtime.json'), JSON.stringify({ format: 'hypit.runtime-local@1', dataRoot: resolve(dataRoot, 'hypit-runtime'),
-    endpoints: { 'gallery.asr':{use:'@gallery/provider-self-hosted',config:{baseUrl:config.modelUrl}},'media.local': { use: '@hypit/provider-media-local', config: { ffmpegPath, ffprobePath, defaultConcurrency: 1 } },
+    endpoints: { 'gallery.asr':{use:'@gallery/provider-self-hosted',config:{baseUrl:config.modelUrl,allowedOrigin:config.modelUrl?new URL(config.modelUrl).origin:''}},'media.local': { use: '@hypit/provider-media-local', config: { ffmpegPath, ffprobePath, defaultConcurrency: 1 } },
       'hyperframes.local': { use: '@hypit/provider-hyperframes-local', config: { workers: 2, defaultConcurrency: 1, browserCapacity: 2, ...(chromePath ? {chromePath} : {browserCacheDirectory: resolve(dataRoot, 'browser'), browserDownloadBaseUrl: 'https://registry.npmmirror.com/-/binary/chrome-for-testing'}), ffmpegPath, ffprobePath, browserGpu: 'software' } } } }))
   return workspace
 }

@@ -12,8 +12,8 @@ export default {
   format:'hypit.node-package@1' as const,
   hostFacets:[createRuntimeEndpointAdapterFacet({use:module.name,activate(context){
     assert(context.pool,'自建 ASR 需要执行池')
-    const config=context.config as {baseUrl?:string},baseUrl=config.baseUrl?.replace(/\/$/,'')
-    assert(baseUrl&&new URL(baseUrl).protocol==='http:'&&new URL(baseUrl).hostname==='172.18.20.44','自建模型仅使用已配置的服务器网关')
+    const config=context.config as {baseUrl?:string;allowedOrigin?:string},baseUrl=config.baseUrl?.replace(/\/$/,'')
+    assert(baseUrl&&new URL(baseUrl).protocol==='http:'&&new URL(baseUrl).origin===config.allowedOrigin,'自建模型仅使用已配置的服务器网关')
     async function request(path:string,init:RequestInit={}) {
       for(let attempt=0;attempt<4;attempt++){
         let response:Response

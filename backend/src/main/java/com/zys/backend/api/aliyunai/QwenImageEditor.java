@@ -42,7 +42,7 @@ import java.util.function.Consumer;
 public class QwenImageEditor {
     static final String TASK_PREFIX = "qwen-local-";
 
-    @Value("${qwenImage.baseUrl:http://172.18.20.44:30066}")
+    @Value("${qwenImage.baseUrl:}")
     private String baseUrl;
 
     @Resource

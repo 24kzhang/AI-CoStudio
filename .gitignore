@@ -7,6 +7,8 @@ application-local.yml
 backend/data/
 vector-service/data/
 runtime-data/
+# 模型网关配置仅保留本地
+/runtime-data/model.properties
 runtime-logs/
 .playwright-cli/
 .playwright-mcp/

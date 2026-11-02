@@ -14,7 +14,7 @@ import org.springframework.stereotype.Component;
 /** 文生图与下载分离，先保存模型回执，再转存产物。 */
 @Component
 public class QwenImageGenerator {
-    @Value("${qwenImage.baseUrl:http://172.18.20.44:30066}") private String baseUrl;
+    @Value("${qwenImage.baseUrl:}") private String baseUrl;
     @Getter @AllArgsConstructor public static class Receipt { private final String id; private final String url; }
 
     public Receipt generate(String prompt,int width,int height) {

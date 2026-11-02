@@ -44,7 +44,7 @@ public class AgentPlannerService {
             + "7. 当前部署尚无图像分割服务，不能自动拆分图层或提取物体为独立图层。此类请求直接解释能力限制，"
             + "不要承诺成功，也不要用抠图或换背景工具冒充图层分割。";
 
-    @Value("${agent.planner.baseUrl:http://172.18.20.44:30066/qwen-vl/v1}")
+    @Value("${agent.planner.baseUrl:}")
     private String baseUrl;
 
     @Value("${agent.planner.apiKey:}")

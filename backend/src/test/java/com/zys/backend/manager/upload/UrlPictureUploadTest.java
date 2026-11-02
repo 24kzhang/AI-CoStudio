@@ -14,11 +14,11 @@ class UrlPictureUploadTest {
         UrlPictureUpload upload = new UrlPictureUpload();
         QwenImageEditor editor = mock(QwenImageEditor.class);
         ReflectionTestUtils.setField(upload, "qwenImageEditor", editor);
-        String output = "http://172.18.20.44:30066/qwen-image/outputs/result.png";
+        String output = "http://10.0.0.44:30066/qwen-image/outputs/result.png";
         when(editor.isGeneratedOutputUrl(output)).thenReturn(true);
         assertDoesNotThrow(() -> upload.validPicture(output));
         assertThrows(BusinessException.class, () -> upload.validPicture(output + "?redirect=1"));
-        assertThrows(BusinessException.class, () -> upload.validPicture("http://172.18.20.44:30066/api/status"));
+        assertThrows(BusinessException.class, () -> upload.validPicture("http://10.0.0.44:30066/api/status"));
         assertThrows(BusinessException.class, () -> upload.validPicture("http://127.0.0.1/secret"));
     }
 }

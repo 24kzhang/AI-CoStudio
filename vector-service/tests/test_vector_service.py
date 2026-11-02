@@ -26,14 +26,26 @@ def make_png(path: Path, color: tuple[int, int, int] = (20, 40, 60)) -> bytes:
     return data
 
 
-def test_server_settings_ignore_legacy_cloud_credentials(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_server_settings_ignore_legacy_cloud_credentials(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     monkeypatch.setenv("DASHSCOPE_API_KEY", "old-cloud-key")
     monkeypatch.setenv("DASHSCOPE_EMBEDDING_URL", "https://old-cloud.test")
     monkeypatch.delenv("EMBEDDING_API_KEY", raising=False)
     monkeypatch.delenv("EMBEDDING_BASE_URL", raising=False)
+    monkeypatch.delenv("MODEL_BASE_URL", raising=False)
+    local_config = tmp_path / "model.properties"
+    local_config.write_text("# 模型网关\nMODEL_BASE_URL = http://model.example:30066/\n", encoding="utf-8")
+    monkeypatch.setenv("GALLERY_MODEL_CONFIG", str(local_config))
     config = Settings()
     assert config.api_key == ""
-    assert config.base_url == "http://172.18.20.44:30066/embedding"
+    assert config.base_url == "http://model.example:30066/embedding"
+    monkeypatch.setenv("MODEL_BASE_URL", "https://override.example/")
+    assert Settings().base_url == "https://override.example/embedding"
+    monkeypatch.setenv("EMBEDDING_BASE_URL", "https://embedding.example/")
+    assert Settings().base_url == "https://embedding.example"
+    monkeypatch.delenv("MODEL_BASE_URL")
+    monkeypatch.delenv("EMBEDDING_BASE_URL")
+    local_config.unlink()
+    assert Settings().base_url == ""
 
 
 def test_new_model_revision_and_dimension_use_isolated_indexes(tmp_path: Path) -> None:
