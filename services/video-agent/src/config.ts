@@ -2,7 +2,7 @@ import { readFileSync, existsSync, mkdirSync, writeFileSync } from 'node:fs'
 import { resolve, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { randomBytes } from 'node:crypto'
-import { modelBaseUrl } from './models.js'
+import { modelBaseUrl, videoLlmConfig } from './models.js'
 
 export const root = resolve(dirname(fileURLToPath(import.meta.url)), '../../..')
 const properties: Record<string, string> = {}
@@ -30,10 +30,8 @@ export const config = {
   maxFrames: Number(process.env.VIDEO_MAX_SECONDS || 120) * 24,
   quotaBytes: Number(process.env.VIDEO_QUOTA_BYTES || 1024 ** 3),
   quotaCount: Number(process.env.VIDEO_QUOTA_COUNT || 50),
-  llmUrl: process.env.VIDEO_LLM_URL || (gatewayUrl ? gatewayUrl + '/qwen-vl/v1' : ''),
+  ...videoLlmConfig(),
   agentMaxRounds: Math.max(1,Math.min(64,Number(process.env.VIDEO_AGENT_MAX_ROUNDS || 32))),
-  llmKey: process.env.VIDEO_LLM_KEY || '',
-  llmModel: process.env.VIDEO_LLM_MODEL || 'Qwen3.8-27B-FP8',
   llmTimeoutMs: Number(process.env.VIDEO_LLM_TIMEOUT_MS || 630_000),
   database: { host: dbUrl.hostname, port: Number(dbUrl.port || 3306), database: dbUrl.pathname.slice(1),
     user: process.env.DB_USERNAME || properties['database.username'] || 'root', password: process.env.DB_PASSWORD || properties['database.password'] || '',

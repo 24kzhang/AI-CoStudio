@@ -25,7 +25,7 @@ function postJson(url:string,headers:Record<string,string>,body:unknown,timeout:
   })
 }
 
-/** 自建接口同步生成，返回原生 tool_calls，工具仍由 Agent 的既有校验器执行。 */
+/** 通过兼容接口同步生成，返回原生 tool_calls，工具仍由 Agent 的既有校验器执行。 */
 export async function requestPlannerTurn(config:PlannerConfig,messages:any[],tools:any[]) {
   const headers:Record<string,string>={'Content-Type':'application/json'}
   if(config.llmKey.trim())headers.Authorization=`Bearer ${config.llmKey}`

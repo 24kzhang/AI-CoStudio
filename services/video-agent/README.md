@@ -16,7 +16,7 @@ npm start
 
 环境变量需要由进程管理器或 Shell 注入，服务不自动加载 `.env`。数据库沿用现有 MySQL；迁移新增 `video_*` 表、修正旧视频表的事务引擎，并可重复执行。连接时统一 MySQL 会话为 UTC；旧版本默认创建时间曾使用数据库本地时钟，第一次升级会按原数据库时差备份并校正视频创建时间，未更新过的同值更新时间一并校正，租约和业务内容保持原样。校正与 `video_migration` 标记在同一事务完成；备份位于 `VIDEO_DATA_ROOT/legacy-clock-backup-*.json`。Hypit Runtime 的 SQLite 和浏览器缓存保存在 `runtime-data/video-agent`；不承担项目业务持久化。首次导出会下载 Hypit 指定的渲染引擎和 Headless Shell，使用 npm/浏览器镜像；也可通过 `VIDEO_CHROME` 指定已安装浏览器。
 
-`VIDEO_SERVICE_KEY` 必须在 Java 和 Node 中相同；本地未配置时使用自动生成的 `runtime-data/video-service.key`。Java 的 `gallery.video.service-key-file` 可指定文件位置。`VIDEO_LLM_KEY` 独立覆盖规划密钥，未设置时复用现有阿里云配置。数据库、模型地址、上传限制、空间配额、字体和可选浏览器路径见 `.env.example`。
+`VIDEO_SERVICE_KEY` 必须在 Java 和 Node 中相同；本地未配置时使用自动生成的 `runtime-data/video-service.key`。Java 的 `gallery.video.service-key-file` 可指定文件位置。视频规划与画面审核使用百炼 `qwen3.8-flash`，地址、模型和密钥分别读取被忽略的 `runtime-data/model.properties` 中的 `VIDEO_LLM_URL`、`VIDEO_LLM_MODEL`、`VIDEO_LLM_KEY`，同名环境变量优先。数据库、模型地址、上传限制、空间配额、字体和可选浏览器路径见 `.env.example`。
 
 前端 `VITE_VIDEO_ENABLED=false` 可隐藏视频入口；启动器 `VIDEO_ENABLED=false` 可关闭视频服务启动。开发代理已配置 `/api/video-editor/**`；生产反向代理模板见 `deploy/nginx-video.conf`，包含 WebSocket、SSE、Range 与上传限制。服务及 Studio 端口保持 loopback，不直接暴露。
 

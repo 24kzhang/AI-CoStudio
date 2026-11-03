@@ -4,7 +4,7 @@ import {createServer} from 'node:http'
 import {once} from 'node:events'
 import {requestPlannerTurn} from '../src/planner-client.js'
 
-test('self-hosted native calls need no Aliyun key and preserve tool results',async()=>{
+test('百炼请求携带鉴权并保留多轮工具调用结果',async()=>{
   const received:any[]=[]
   let finish='tool_calls'
   const server=createServer(async(req,res)=>{
@@ -16,17 +16,18 @@ test('self-hosted native calls need no Aliyun key and preserve tool results',asy
     ]}}]}))
   }).listen(0,'127.0.0.1')
   await once(server,'listening')
-  const config={llmUrl:`http://127.0.0.1:${(server.address() as any).port}/v1/`,llmKey:'',llmModel:'Qwen3.8-27B-FP8',llmTimeoutMs:10_000}
+  const config={llmUrl:`http://127.0.0.1:${(server.address() as any).port}/v1/`,llmKey:'test-key',llmModel:'qwen3.8-flash',llmTimeoutMs:10_000}
   const tools=[{type:'function',function:{name:'insert_clip'}}]
   try {
     const turn=await requestPlannerTurn(config,[{role:'user',content:'咖啡带货短片添加标题'}],tools)
-    assert.equal(received[0].authorization,undefined)
-    assert.equal(received[0].body.model,'Qwen3.8-27B-FP8')
+    assert.equal(received[0].authorization,'Bearer test-key')
+    assert.equal(received[0].body.model,'qwen3.8-flash')
     assert.equal(received[0].body.stream,false)
     assert.equal(received[0].body.parallel_tool_calls,false)
     assert.equal(received[0].body.enable_thinking,false)
     const history=[{role:'user',content:'添加标题'},turn,{role:'tool',tool_call_id:turn.tool_calls[0].id,content:'{"created":true}'}]
     await requestPlannerTurn(config,history,tools)
+    assert.equal(received[1].authorization,'Bearer test-key')
     assert.deepEqual(received[1].body.messages,history)
     assert.notEqual(received[0].body.request_id,received[1].body.request_id)
     finish='length'
@@ -34,10 +35,10 @@ test('self-hosted native calls need no Aliyun key and preserve tool results',asy
   } finally {server.close();server.closeAllConnections()}
 })
 
-test('explicit total timeout aborts delayed upstream responses with an actionable error',async()=>{
+test('显式总时限会中断超时请求并提供可操作的提示',async()=>{
   const server=createServer((_req,res)=>setTimeout(()=>res.end('{}'),100)).listen(0,'127.0.0.1')
   await once(server,'listening')
   try {
-    await assert.rejects(requestPlannerTurn({llmUrl:`http://127.0.0.1:${(server.address() as any).port}`,llmKey:'',llmModel:'Qwen3.8-27B-FP8',llmTimeoutMs:20},[],[]),/规划等待超时.*未提交/)
+    await assert.rejects(requestPlannerTurn({llmUrl:`http://127.0.0.1:${(server.address() as any).port}`,llmKey:'',llmModel:'qwen3.8-flash',llmTimeoutMs:20},[],[]),/规划等待超时.*未提交/)
   } finally {server.close();server.closeAllConnections()}
 })
