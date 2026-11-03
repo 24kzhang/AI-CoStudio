@@ -8,6 +8,7 @@ import { stateSchema, duration, type State, type Asset } from './timeline.js'
 import sharp from 'sharp'
 import { sourceFiles, runEntry } from './source-bundle.js'
 import {patchRenderPortSource} from './render-port-patch.js'
+import { resolveFont } from './fonts.js'
 
 export const hypitRoot = resolve(root, 'services/video-agent/node_modules/@hypit/hypit')
 export const ffmpegPath = process.env.VIDEO_FFMPEG || (process.platform === 'win32' && existsSync(resolve(root,'runtime-data/media-tools/ffmpeg.exe')) ? resolve(root,'runtime-data/media-tools/ffmpeg.exe') : 'ffmpeg')
@@ -143,11 +144,13 @@ export const hypit = (args: string[], workspace: string, log?: string, onOutput?
   command(process.execPath, [resolve(hypitRoot, 'bin/hypit.mjs'), ...args,
     ...(args[0] === 'vocabulary' ? [] : ['--workspace', workspace]), '--json'], workspace, log, onOutput)
 export async function writeWorkspace(projectId: string, revision: number | string, source: SourceBundle, assets: Asset[]) {
+  const files=sourceFiles(source)
+  const font=Object.values(files).some(text=>text.includes('font.ttf'))?resolveFont():undefined
   await prepareResults()
   const workspace = resolve(dataRoot, 'projects', projectId, String(revision))
   await mkdir(resolve(workspace, 'assets'), { recursive: true })
   await sharp({ create: { width: 1, height: 1, channels: 3, background: '#000000' } }).png().toFile(resolve(workspace, 'assets/black.png'))
-  const files=sourceFiles(source),manifestPath=resolve(workspace,'gallery-source-manifest.json')
+  const manifestPath=resolve(workspace,'gallery-source-manifest.json')
   let previous:string[]=[];try{previous=JSON.parse(await readFile(manifestPath,'utf8'))}catch{}
   for(const name of previous)if(!(name in files))await unlink(resolve(workspace,name)).catch(()=>{})
   for (const [name,text] of Object.entries(files)){await mkdir(dirname(resolve(workspace,name)),{recursive:true});await writeFile(resolve(workspace,name),text,'utf8')}
@@ -162,8 +165,7 @@ export async function writeWorkspace(projectId: string, revision: number | strin
     const asset = assets.find(a => a.id === id); if (!asset) throw new ApiError(422, 'MISSING_ASSET', '版本引用的素材缺失')
     await copyFile(asset.path, resolve(workspace, 'assets', id + (asset.kind === 'image' ? '.png' : asset.kind === 'audio' ? '.wav' : '.mp4')))
   }
-  if (Object.values(files).some(text=>text.includes('font.ttf'))) {
-    const font = process.env.VIDEO_FONT || (process.platform === 'win32' ? 'C:/Windows/Fonts/simhei.ttf' : '/usr/share/fonts/truetype/noto/NotoSansCJK-Regular.ttf')
+  if (font) {
     await copyFile(font, resolve(workspace, 'assets/font.ttf'))
   }
   await writeFile(resolve(workspace, 'hypit.runtime.json'), JSON.stringify({ format: 'hypit.runtime-local@1', dataRoot: resolve(dataRoot, 'hypit-runtime'),

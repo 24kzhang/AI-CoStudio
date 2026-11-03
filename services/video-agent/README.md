@@ -18,6 +18,8 @@ npm start
 
 `VIDEO_SERVICE_KEY` 必须在 Java 和 Node 中相同；本地未配置时使用自动生成的 `runtime-data/video-service.key`。Java 的 `gallery.video.service-key-file` 可指定文件位置。视频规划与画面审核使用百炼 `qwen3.8-flash`，地址、模型和密钥分别读取被忽略的 `runtime-data/model.properties` 中的 `VIDEO_LLM_URL`、`VIDEO_LLM_MODEL`、`VIDEO_LLM_KEY`，同名环境变量优先。数据库、模型地址、上传限制、空间配额、字体和可选浏览器路径见 `.env.example`。
 
+中文字体优先使用有效的 `VIDEO_FONT` 文件；配置失效时自动检测本机常见中文字体。macOS 支持用户字体目录中的思源黑体及系统中文字体，避免依赖固定的苹方法径。全部候选均不可用时会提示配置 `VIDEO_FONT`，已有文字的工程会在 Agent 调用生成模型前检查字体。
+
 前端 `VITE_VIDEO_ENABLED=false` 可隐藏视频入口；启动器 `VIDEO_ENABLED=false` 可关闭视频服务启动。开发代理已配置 `/api/video-editor/**`；生产反向代理模板见 `deploy/nginx-video.conf`，包含 WebSocket、SSE、Range 与上传限制。服务及 Studio 端口保持 loopback，不直接暴露。
 
 ## 使用与事实源

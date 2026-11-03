@@ -118,13 +118,23 @@ async function importAssetInDirectory(project: any, actor: Actor, input: string,
 export async function projectAssets(projectId: string, actor?: Actor, scope?: Scope): Promise<Asset[]> {
   const assets = (await rows('SELECT metadata FROM video_asset WHERE project_id=? ORDER BY created_at', [projectId])).map(row=>json<Asset>(row.metadata))
   for (const asset of assets) {
+    const directory = resolve(dataRoot,'assets',asset.id)
     try { await stat(asset.path) } catch {
-      if (!actor || !scope || !asset.objectKey) throw new ApiError(422,'ASSET_NOT_CACHED','素材缓存缺失且无法重新获取')
-      const directory = resolve(dataRoot,'assets',asset.id); await mkdir(directory,{recursive:true})
       asset.path = resolve(directory, asset.kind==='image'?'image.png':asset.kind==='video'?'video.mp4':'audio.wav')
-      await downloadObject(actor,scope,asset.objectKey,asset.path)
+      try { await stat(asset.path) } catch {
+        if (!actor || !scope || !asset.objectKey) throw new ApiError(422,'ASSET_NOT_CACHED','素材缓存缺失且无法重新获取')
+        await downloadObject(actor,scope,asset.objectKey,asset.path)
+      }
     }
-    if (asset.audioKey && asset.audioPath) try { await stat(asset.audioPath) } catch { if (actor && scope) await downloadObject(actor,scope,asset.audioKey,asset.audioPath) }
+    if (asset.audioKey) {
+      try { if(!asset.audioPath)throw Error('音轨缓存未定位');await stat(asset.audioPath) } catch {
+        asset.audioPath = resolve(directory,'source.wav')
+        try { await stat(asset.audioPath) } catch {
+          if (!actor || !scope) throw new ApiError(422,'ASSET_NOT_CACHED','音轨缓存缺失且无法重新获取')
+          await downloadObject(actor,scope,asset.audioKey,asset.audioPath)
+        }
+      }
+    }
   }
   return assets
 }

@@ -1,7 +1,6 @@
 <template>
   <main class="video-editor">
     <header class="editor-header"><div class="project-title"><router-link to="/?media=video">← 图库</router-link><strong>{{project?.name||'视频工作台'}}</strong><span>v{{revision}} · 24 fps</span></div><div class="header-actions"><span class="save-state">{{busy?'正在提交…':pendingOperation?'提交结果待确认':lease?'独占剪辑':annotation?'多人字幕 / 贴图 · 已自动保存':'只读查看'}}</span><button v-if="!lease && !annotation" :disabled="locked || members.length>0" @click="acquire">独占剪辑</button><button v-if="!lease && !annotation && project?.space_id" :disabled="locked" @click="joinAnnotations">加入多人字幕 / 贴图（{{members.length}}/5）</button><button v-if="annotation" :disabled="locked" @click="leaveAnnotations">退出多人编辑</button><template v-if="lease"><button :disabled="locked" @click="handoffOpen=true">交接编辑权</button><button :disabled="locked" @click="release">释放</button></template><button class="accent" :disabled="!lease||locked" @click="exportVideo">导出 MP4</button></div></header>
-    <router-link v-if="!viewUnavailable" class="native-link" :to="`/video/hypit/${id}`">打开完整 Hypit 工程 → 源文件、语义组件、评论与产物</router-link>
     <a-alert v-if="members.length" :message="`字幕 / 贴图协作中：${members.map(m=>m.name || m.userId).join('、')}。视频剪辑需等成员退出。`" type="info" show-icon/><a-alert v-if="error" :message="error" type="error" show-icon closable @close="error=''"/>
     <section v-if="pendingOperation" class="pending-operation">
       <a-alert type="warning" show-icon message="提交结果尚未确认。重试原请求可核对结果，不会重复添加字幕或贴图。" />
@@ -183,21 +182,61 @@ onBeforeUnmount(()=>{if(renewal)clearInterval(renewal);if(poller)clearInterval(p
 .video-editor :deep(.ant-spin-nested-loading){flex:1;height:0;min-height:0}
 .video-editor :deep(.ant-spin-nested-loading),.video-editor :deep(.ant-spin-container){height:100%;min-height:0}
 .video-editor :deep(.ant-spin-container){display:flex;flex-direction:column}
-.editor-header{flex:0 0 auto;height:auto;min-height:52px;padding:10px 14px;flex-wrap:wrap;background:var(--gallery-panel)}
-.editor-header+.native-link{flex:0 0 auto;padding:7px 14px;color:var(--gallery-primary);background:var(--gallery-primary-soft)}
-.editor-body,.editor-body.studio-mode{flex:1;min-height:0;overflow:hidden;grid-template-columns:200px minmax(0,1fr) 220px;grid-template-rows:minmax(0,1fr) 165px}
-.asset-panel,.inspector-panel{min-height:0;overflow:auto;padding:12px}.asset-panel{display:flex;flex-direction:column;gap:8px}
-.asset-panel>.panel-heading{margin:0 0 5px;flex:0 0 auto}.asset-list{flex:1;min-height:90px;overflow:auto;margin:0;overscroll-behavior:contain}
+.editor-header{flex:0 0 auto;height:auto;min-height:40px;padding:4px 12px;flex-wrap:wrap;background:var(--gallery-panel)}
+.editor-body,.editor-body.studio-mode{
+  flex:1;min-height:0;overflow:hidden;
+  grid-template-columns:180px minmax(0,1fr) 190px 300px;
+  grid-template-rows:minmax(0,1fr);
+  grid-template-areas:"assets editor inspector agent";
+}
+.asset-panel,.inspector-panel{min-height:0;overflow:auto;padding:12px}
+.asset-panel{grid-area:assets;display:flex;flex-direction:column;gap:8px}
+.inspector-panel{grid-area:inspector;display:block;max-height:none}
+.asset-panel>.panel-heading{margin:0 0 5px;flex:0 0 auto}
+.asset-list{flex:1;min-height:90px;overflow:auto;margin:0;overscroll-behavior:contain}
 .model-panel{margin:0;flex:0 0 auto;border-top:1px solid var(--gallery-line);padding-top:10px;max-height:55%;overflow:auto}
-.model-panel label{display:block;margin-top:8px}.model-panel small{display:block;color:var(--gallery-muted);line-height:1.5}
-.central-panel{min-height:0}.preview-stage,.preview-stage.studio-stage{flex:1;height:auto;min-height:80px;background:#eaf0f7}
-.preview-heading{flex:0 0 auto}.transport{flex:0 0 auto}.timeline-toolbar{flex:0 0 auto;background:var(--gallery-panel)}
-.timeline-scroll{flex:0 0 clamp(100px,19vh,175px);min-height:0;max-height:none;overscroll-behavior:contain}.timeline-clip{color:#243247}
-.agent-panel{min-height:0;max-height:none;overflow:hidden;padding:10px 14px;grid-template-columns:minmax(0,1fr) 240px 280px;grid-template-rows:18px minmax(0,1fr);gap:7px 12px}
-.agent-panel>.panel-heading{margin:0}.messages{min-height:0;overflow:auto}.agent-intro{font-size:11px;margin-bottom:6px}.chat-entry{overflow-wrap:anywhere}
-.agent-input{display:flex;flex-direction:column;min-height:0}.agent-input textarea{height:auto;min-height:45px;flex:1;resize:none}.run-card{min-height:0;overflow:auto}.video-editor .accent{color:white}.preview-tabs .active{color:var(--gallery-primary)}
-@media(max-width:1100px){.editor-body,.editor-body.studio-mode{grid-template-columns:170px minmax(0,1fr) 185px}.agent-panel{grid-template-columns:minmax(0,1fr) 190px 240px}.inspector-panel{grid-column:auto;max-height:none}.agent-input{grid-column:auto}}
-@media(max-width:760px){.editor-body,.editor-body.studio-mode{grid-template-columns:150px minmax(0,1fr);grid-template-rows:minmax(0,1fr) 145px}.inspector-panel{display:none}.agent-panel{grid-template-columns:minmax(0,1fr) 230px}.run-card{display:none}.agent-input{grid-column:auto}.header-actions{gap:5px}.timeline-scroll{flex-basis:100px}}
+.model-panel label{display:block;margin-top:8px}
+.model-panel small{display:block;color:var(--gallery-muted);line-height:1.5}
+.central-panel{grid-area:editor;min-height:0}
+.preview-stage,.preview-stage.studio-stage{flex:1;height:auto;min-height:120px;background:#eaf0f7}
+.preview-heading,.transport{flex:0 0 auto}
+.preview-heading{padding:4px 10px;gap:8px}
+.preview-tabs button{padding:4px 8px}
+.timeline-toolbar{flex:0 0 auto;background:var(--gallery-panel)}
+.timeline-scroll{flex:0 0 clamp(182px,calc(19vh + 52px),237px);min-height:0;max-height:none;overscroll-behavior:contain}
+.timeline-clip{color:#243247}
+.agent-panel{
+  grid-area:agent;display:flex;flex-direction:column;gap:12px;
+  min-width:0;min-height:0;max-height:none;overflow:hidden;padding:14px;
+  border-top:0;border-left:1px solid var(--gallery-line);
+}
+.agent-panel>.panel-heading{flex:0 0 auto;flex-wrap:wrap;gap:6px;margin:0}
+.messages{flex:1;min-height:0;overflow:auto;overscroll-behavior:contain}
+.agent-intro{font-size:11px;line-height:1.7;margin-bottom:10px}
+.chat-entry{overflow-wrap:anywhere}
+.run-card{flex:0 1 auto;min-height:0;max-height:30%;overflow:auto;border-left:0;border-top:1px solid var(--gallery-line);padding:12px 0 0}
+.run-card select{margin-bottom:8px}
+.run-card p{max-height:none;overflow:visible;overflow-wrap:anywhere}
+.agent-input{display:flex;flex-direction:column;flex:0 0 auto;min-height:0}
+.agent-input textarea{height:120px;min-height:90px;max-height:24vh;resize:vertical}
+.video-editor .accent{color:white}
+.preview-tabs .active{color:var(--gallery-primary)}
+@media(min-width:1600px){
+  .editor-body,.editor-body.studio-mode{grid-template-columns:190px minmax(0,1fr) 210px 320px}
+}
+@media(max-width:1200px){
+  .editor-body,.editor-body.studio-mode{grid-template-columns:150px minmax(320px,1fr) 170px 270px;overflow-x:auto}
+  .agent-panel{padding:12px}
+  .preview-heading{gap:6px;padding:4px 6px}
+  .timeline-scroll{flex-basis:clamp(178px,calc(19vh + 48px),233px)}
+  .preview-heading select{max-width:140px}
+  .transport{gap:8px;padding:8px}
+  .transport span{font-size:10px}
+}
+@media(max-width:760px){
+  .header-actions{gap:5px}
+  .timeline-scroll{flex-basis:178px}
+}
 
 </style>
 
