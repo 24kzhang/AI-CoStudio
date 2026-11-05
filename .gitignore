@@ -157,3 +157,13 @@ coverage
 /vector-service/.venv/
 /start.command
 /stop.command
+
+# 项目功能展示截图
+!/README-assets/多人图片协同编辑.png
+!/README-assets/图片智能编辑.png
+!/README-assets/图片多尺寸投放.png
+!/README-assets/多人视频协同编辑.png
+!/README-assets/视频智能剪辑.png
+!/README-assets/视频成片导出.png
+!/README-assets/以图搜图.png
+!/README-assets/智能审核.png

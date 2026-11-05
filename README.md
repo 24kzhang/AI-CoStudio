@@ -1,43 +1,49 @@
 # AI 协同云影库
 
-面向图片、视频与 AI 创作的多人协同资产平台。
+集多人协作、图片精修、视频剪辑、智能检索与内容审核于一体的 AI 创作平台。
 
-`Spring Boot` · `Vue 3` · `WebSocket` · `Redis` · `MySQL` · `FastAPI + ChromaDB` · `Node.js + FFmpeg`
+以下均为「搞点事情」团队空间的实际操作截图，协作账号为 zhang 和 alice。
 
-## 资产图库
+## 多人图片协同编辑
 
-### 图库总览
+两人同时添加文字、拖动贴图，共享画布实时同步并自动保存。
 
-![当前图库总览](README-assets/01-gallery.png)
+![多人图片协同编辑](README-assets/多人图片协同编辑.png)
 
-### 智能向量以图搜图
+## 图片 Agent 编辑
 
-![当前向量检索与相似图片召回](README-assets/02-vector-search.png)
+用自然语言修改画面：保留主体与构图，将森林切换为金秋风格。
 
-### 团队空间与权限
+![图片自然语言编辑](README-assets/图片智能编辑.png)
 
-![当前团队空间、成员管理和空间分析入口](README-assets/03-team-space.png)
+一键生成 1:1、4:5、9:16 投放物料，统一保存在图片墙中。
 
-## 图片协同编辑
+![图片多尺寸投放](README-assets/图片多尺寸投放.png)
 
-### 双页面协同
+## 多人视频协同编辑
 
-<table>
-  <tr>
-    <th>Alice 编辑者页面</th>
-    <th>Bob 协作者页面</th>
-  </tr>
-  <tr>
-    <td><img src="README-assets/04-picture-alice.png" alt="Alice 图片协同编辑页面" width="100%"></td>
-    <td><img src="README-assets/05-picture-bob.png" alt="Bob 图片协同查看页面" width="100%"></td>
-  </tr>
-</table>
+两人共同编辑字幕，同步预览画面、文案与时间线。
 
-### AI 图片编辑 Agent
+![多人视频协同编辑](README-assets/多人视频协同编辑.png)
 
-![当前图片编辑 Agent 工作台](README-assets/06-image-agent.png)
+## 视频 Agent 编辑
 
-## 视频协同工作台
+一句话完成片段裁剪、原声音量调整与中文配音，再继续精修字幕排版。
 
-![当前视频时间线、素材轨道、播放预览与剪辑 Agent](README-assets/07-video-workbench.png)
+![视频智能剪辑与配音](README-assets/视频智能剪辑.png)
 
+导出成片，保存回团队图库。
+
+![视频成片导出](README-assets/视频成片导出.png)
+
+## 以图搜图
+
+从团队图片出发检索相似素材，展示相似度与素材来源。
+
+![团队空间以图搜图](README-assets/以图搜图.png)
+
+## AI 审核
+
+自动抽取视频首帧、中间帧和尾帧，返回审核结论与原因，支持重新审核。
+
+![视频智能审核结果](README-assets/智能审核.png)
